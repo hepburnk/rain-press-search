@@ -1,0 +1,40 @@
+:root{
+  --bg:#f6f7f9; --card:#fff; --ink:#1a1d23; --muted:#5f6670; --line:#e3e6ea;
+  --accent:#0b4ea2; --accent-soft:#e8f0fb; --mark:#fff3b0;
+  --mois:#0b4ea2; --kma:#0a8a5f; --police:#8a2d0a;
+}
+*{box-sizing:border-box}
+body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;margin:0;background:var(--bg);color:var(--ink);line-height:1.6}
+header{position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid var(--line);padding:1rem 1.25rem .75rem}
+.head-top h1{margin:0;font-size:1.35rem}
+.sub{margin:.15rem 0 .75rem;color:var(--muted);font-size:.85rem}
+.toolbar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1 1 320px;max-width:560px}
+#q{width:100%;padding:.6rem 2.2rem .6rem .8rem;font-size:1rem;border:1px solid #c9ced6;border-radius:8px;outline:none}
+#q:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+#clear{position:absolute;right:.4rem;top:50%;transform:translateY(-50%);border:0;background:transparent;font-size:1.2rem;color:var(--muted);cursor:pointer;padding:.2rem .4rem;display:none}
+#clear.show{display:block}
+#count{font-weight:600;color:var(--accent);white-space:nowrap}
+.depts{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem}
+.depts button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:.3rem .8rem;font-size:.85rem;cursor:pointer;color:var(--ink)}
+.depts button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.depts button .n{opacity:.75;font-size:.78rem;margin-left:.25rem}
+
+main{max-width:900px;margin:1rem auto;padding:0 1.25rem}
+.card{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--accent);padding:1rem 1.2rem;margin:.75rem 0;border-radius:10px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.card[data-dept="행정안전부"]{border-left-color:var(--mois)}
+.card[data-dept="기상청"]{border-left-color:var(--kma)}
+.card[data-dept="경찰청"]{border-left-color:var(--police)}
+.meta{display:flex;align-items:center;gap:.5rem;font-size:.82rem;color:var(--muted)}
+.label{font-weight:700;padding:.1rem .55rem;border-radius:4px;background:var(--accent-soft);color:var(--accent)}
+.card[data-dept="기상청"] .label{background:#e6f5ef;color:var(--kma)}
+.card[data-dept="경찰청"] .label{background:#f8e9e3;color:var(--police)}
+.title{font-weight:700;font-size:1.08rem;margin:.4rem 0 .5rem}
+.body{white-space:pre-wrap;color:#333;font-size:.93rem}
+.body.collapsed{max-height:7.5em;overflow:hidden;position:relative}
+.body.collapsed::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2.5em;background:linear-gradient(transparent,var(--card))}
+.more{margin-top:.5rem;border:0;background:transparent;color:var(--accent);cursor:pointer;font-size:.85rem;padding:0}
+mark{background:var(--mark);padding:0 .1em;border-radius:2px}
+.empty{text-align:center;color:var(--muted);padding:3rem 1rem;background:var(--card);border:1px dashed var(--line);border-radius:10px}
+footer{max-width:900px;margin:1.5rem auto 2rem;padding:0 1.25rem;color:var(--muted);font-size:.78rem}
+@media (max-width:600px){header{padding:.8rem 1rem}.head-top h1{font-size:1.1rem}#q{font-size:.95rem}}
