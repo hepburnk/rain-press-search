@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 전국병원명부 정리</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2330;--sub:#5d6675;--line:#dfe3ea;--acc:#2f6fd6;--warn:#b5651d;--ok:#1f8a4c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--card:#1d2128;--ink:#e8ebf0;--sub:#9aa3b2;--line:#323844;--acc:#6ea0ff;--warn:#e0a060;--ok:#5fcf8f}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+header{padding:20px 16px 8px;max-width:1200px;margin:auto}h1{margin:0;font-size:22px}.sub{color:var(--sub);margin:4px 0 0;font-size:13px}
+nav{display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px;max-width:1200px;margin:auto}
+nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:999px;cursor:pointer;font-size:14px}
+nav button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+main{max-width:1200px;margin:auto;padding:0 16px 40px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 12px}
+.bar input{flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:15px}
+.bar button{padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer}
+.note{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--warn);padding:10px 12px;border-radius:8px;font-size:13px;color:var(--sub);margin-bottom:12px}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:nowrap}
+th{position:sticky;top:0;background:var(--card);font-weight:600;color:var(--sub)}td.num{text-align:right;font-variant-numeric:tabular-nums}
+td[contenteditable]{min-width:110px;color:var(--warn);background:color-mix(in srgb,var(--warn) 6%,transparent)}td[contenteditable]:not(:empty){color:var(--ink);background:none}
+td[contenteditable]:empty::before{content:"명부 확인";opacity:.6}
+tr.total td{font-weight:700}.ok{color:var(--ok);font-weight:600}
+.badge{display:inline-block;font-size:12px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--sub)}
+</style>
+</head>
+<body>
+<header><h1>2026 전국병원명부 정리</h1><p class="sub">대한병원협회 「2026 전국병원명부」 목차 구조 + 공개 데이터 대조 · 주황 칸은 명부를 보고 직접 입력(이 브라우저에 자동 저장)</p></header>
+<nav id="tabs"></nav>
+<main id="view"></main>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
