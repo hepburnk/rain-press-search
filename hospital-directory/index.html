@@ -9,10 +9,16 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--card:#1d2128;--ink:#e8ebf0;--sub:#9aa3b2;--line:#323844;--acc:#6ea0ff;--warn:#e0a060;--ok:#5fcf8f}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 header{padding:20px 16px 8px;max-width:1200px;margin:auto}h1{margin:0;font-size:22px}.sub{color:var(--sub);margin:4px 0 0;font-size:13px}
-nav{display:flex;gap:6px;flex-wrap:wrap;padding:12px 16px;max-width:1200px;margin:auto}
-nav button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;border-radius:999px;cursor:pointer;font-size:14px}
-nav button.on{background:var(--acc);border-color:var(--acc);color:#fff}
-main{max-width:1200px;margin:auto;padding:0 16px 40px}
+.layout{max-width:1280px;margin:auto;padding:8px 16px 40px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px;align-items:start}
+nav{position:sticky;top:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;max-height:calc(100vh - 24px);overflow:auto}
+.grp+.grp{margin-top:6px;border-top:1px solid var(--line);padding-top:6px}.gt{font-size:12px;color:var(--sub);padding:4px 8px;font-weight:600}
+nav button{display:flex;align-items:center;gap:6px;width:100%;text-align:left;border:0;background:none;color:var(--ink);padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13.5px}
+nav button:hover{background:color-mix(in srgb,var(--acc) 8%,transparent)}nav button.on{background:var(--acc);color:#fff}
+.no{min-width:30px;font-size:12px;opacity:.7}.st{margin-left:auto;font-size:10px}.st.y{color:var(--ok)}.st.n{opacity:.4}nav button.on .st{color:#fff}
+main h2{margin:4px 0 10px;font-size:19px}
+table.req td.y{color:var(--ok)}table.req td.p{color:var(--warn)}table.req td.n{color:var(--sub)}table.req th{white-space:nowrap}
+.legend{font-size:13px;color:var(--sub)}.how{font-size:14px;line-height:1.8}.how a{color:var(--acc)}
+@media (max-width:760px){.layout{grid-template-columns:1fr}nav{position:static;max-height:none}}
 .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 12px}
 .bar input{flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:15px}
 .bar button{padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer}
@@ -28,8 +34,7 @@ tr.total td{font-weight:700}.ok{color:var(--ok);font-weight:600}
 </head>
 <body>
 <header><h1>2026 전국병원명부 정리</h1><p class="sub">대한병원협회 「2026 전국병원명부」 목차 구조 + 공개 데이터 대조 · 주황 칸은 명부를 보고 직접 입력(이 브라우저에 자동 저장)</p></header>
-<nav id="tabs"></nav>
-<main id="view"></main>
+<div class="layout"><nav id="tabs" aria-label="명부 목차"></nav><main><h2 id="ttl"></h2><div id="view"></div></main></div>
 <script src="data.js"></script>
 <script src="app.js"></script>
 </body>
