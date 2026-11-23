@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>2026 전국병원명부 정리</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2330;--sub:#5d6675;--line:#dfe3ea;--acc:#2f6fd6;--warn:#b5651d;--ok:#1f8a4c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--card:#1d2128;--ink:#e8ebf0;--sub:#9aa3b2;--line:#323844;--acc:#6ea0ff;--warn:#e0a060;--ok:#5fcf8f}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+header{padding:20px 16px 8px;max-width:1200px;margin:auto}h1{margin:0;font-size:22px}.sub{color:var(--sub);margin:4px 0 0;font-size:13px}
+.layout{max-width:1280px;margin:auto;padding:8px 16px 40px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px;align-items:start}
+nav{position:sticky;top:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;max-height:calc(100vh - 24px);overflow:auto}
+.grp+.grp{margin-top:6px;border-top:1px solid var(--line);padding-top:6px}.gt{font-size:12px;color:var(--sub);padding:4px 8px;font-weight:600}
+nav button{display:flex;align-items:center;gap:6px;width:100%;text-align:left;border:0;background:none;color:var(--ink);padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13.5px}
+nav button:hover{background:color-mix(in srgb,var(--acc) 8%,transparent)}nav button.on{background:var(--acc);color:#fff}
+.no{min-width:30px;font-size:12px;opacity:.7}.st{margin-left:auto;font-size:10px}.st.y{color:var(--ok)}.st.n{opacity:.4}nav button.on .st{color:#fff}
+main h2{margin:4px 0 10px;font-size:19px}
+table.req td.y{color:var(--ok)}table.req td.p{color:var(--warn)}table.req td.n{color:var(--sub)}table.req th{white-space:nowrap}
+.legend{font-size:13px;color:var(--sub)}.how{font-size:14px;line-height:1.8}.how a{color:var(--acc)}
+@media (max-width:760px){.layout{grid-template-columns:1fr}nav{position:static;max-height:none}}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0 12px}
+.bar input{flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-size:15px}
+.bar button{padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);cursor:pointer}
+.note{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--warn);padding:10px 12px;border-radius:8px;font-size:13px;color:var(--sub);margin-bottom:12px}
+.wrap{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:nowrap}
+th{position:sticky;top:0;background:var(--card);font-weight:600;color:var(--sub)}td.num{text-align:right;font-variant-numeric:tabular-nums}
+td[contenteditable]{min-width:110px;color:var(--warn);background:color-mix(in srgb,var(--warn) 6%,transparent)}td[contenteditable]:not(:empty){color:var(--ink);background:none}
+td[contenteditable]:empty::before{content:"명부 확인";opacity:.6}
+tr.total td{font-weight:700}.ok{color:var(--ok);font-weight:600}
+.badge{display:inline-block;font-size:12px;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--sub)}
+</style>
+</head>
+<body>
+<header><h1>2026 전국병원명부 정리</h1><p class="sub">대한병원협회 「2026 전국병원명부」 목차 구조 + 공개 데이터 대조 · 주황 칸은 명부를 보고 직접 입력(이 브라우저에 자동 저장)</p></header>
+<div class="layout"><nav id="tabs" aria-label="명부 목차"></nav><main><h2 id="ttl"></h2><div id="view"></div></main></div>
+<script>
+// 2026 전국병원명부(대한병원협회) 정리용 데이터
+// - 전국현황: 명부 21쪽 사진에서 옮김 (2026.09. 현재, 군병원 제외)
+// - 상급종합병원: 보건복지부 제5기(2024.1.1~2026.12.31) 지정 47개소
+// - 대표전화·주소·응급의료기관 구분: 국립중앙의료원 응급의료포털 공개 데이터(MedInfo) 조회값, 2026-11-23 조회
+// - 병원장·팩스·장비·비급여·환자경험평가 담당자는 공개 데이터에 없어 빈칸(명부 보고 입력)
+const 전국현황 = {
+  기준: "2026. 09. 현재 (군병원 제외)", 출처: "2026 전국병원명부 21쪽",
+  행: [["종합병원",385,159319],["병원",1427,136765],["요양병원",1350,258844],["정신병원",263,62211]],
+  계: [3425,617139]
+};
+
+// [권역, 병원명(공식), 주소, 대표전화, 응급의료기관]
+const 상급종합 = [
+["서울권","강북삼성병원","서울 종로구 새문안로 29","02-2001-2001","지역응급의료센터"],
+["서울권","건국대학교병원","서울 광진구 능동로 120-1","1588-1533","지역응급의료센터"],
+["서울권","경희대학교병원","서울 동대문구 경희대로 23","02-958-8114","지역응급의료센터"],
+["서울권","고려대학교의과대학부속구로병원","서울 구로구 구로동로 148","02-2626-1114","권역응급의료센터"],
+["서울권","삼성서울병원","서울 강남구 일원로 81","02-3410-2114","지역응급의료센터"],
+["서울권","서울대학교병원","서울 종로구 대학로 101","1588-5700","권역응급의료센터"],
+["서울권","연세대학교의과대학강남세브란스병원","서울 강남구 언주로 211","02-2019-3114","지역응급의료센터"],
+["서울권","연세대학교의과대학세브란스병원","서울 서대문구 연세로 50-1","02-2228-0114","권역응급의료센터"],
+["서울권","이화여자대학교의과대학부속목동병원","서울 양천구 안양천로 1071","02-2650-5114","지역응급의료센터"],
+["서울권","서울아산병원","서울 송파구 올림픽로43길 88","02-3010-3114","지역응급의료센터"],
+["서울권","중앙대학교병원","서울 동작구 흑석로 102","1800-1114","지역응급의료센터"],
+["서울권","고려대학교의과대학부속병원(안암병원)","서울 성북구 고려대로 73","1577-0083","권역응급의료센터"],
+["서울권","가톨릭대학교서울성모병원","서울 서초구 반포대로 222","1588-1511","지역응급의료센터"],
+["서울권","한양대학교병원","서울 성동구 왕십리로 222-1","02-2290-8114","권역응급의료센터"],
+["경기서북부권","가톨릭대학교 인천성모병원","인천 부평구 동수로 56","032-280-6364","권역응급의료센터"],
+["경기서북부권","순천향대학교부속부천병원","경기 부천시 원미구 조마루로 170","032-621-5114","권역응급의료센터"],
+["경기서북부권","길병원(가천대학교길병원)","인천 남동구 남동대로774번길 21","1577-2299","권역응급의료센터"],
+["경기서북부권","인하대학교의과대학부속병원","인천 인항로 27","032-890-2114","권역응급의료센터"],
+["경기남부권","가톨릭대학교성빈센트병원","경기 수원시 팔달구 중부대로 93","1577-8588","지역응급의료센터"],
+["경기남부권","고려대학교의과대학부속안산병원","경기 안산시 단원구 적금로 123","1577-7516","권역응급의료센터"],
+["경기남부권","분당서울대학교병원","경기 성남시 분당구 구미로173번길 82","031-787-2114","권역응급의료센터"],
+["경기남부권","아주대학교병원","경기 수원시 영통구 월드컵로 164","031-219-5114","권역응급의료센터"],
+["경기남부권","한림대학교성심병원","경기 안양시 동안구 관평로170번길 22","031-380-1500","권역응급의료센터"],
+["강원권","강릉아산병원","강원 강릉시 사천면 방동길 38","033-610-3114","권역응급의료센터"],
+["강원권","연세대학교원주세브란스기독병원","강원 원주시 일산로 20","033-741-0114","권역응급의료센터"],
+["충북권","충북대학교병원","충북 청주시 서원구 1순환로 776","043-269-6114","권역응급의료센터"],
+["충남권","단국대학교의과대학부속병원","충남 천안시 동남구 망향로 201","041-550-7114","권역응급의료센터"],
+["충남권","충남대학교병원","대전 중구 문화로 282","1599-7123","권역응급의료센터"],
+["충남권","건양대학교병원","대전 서구 관저동로 158","042-600-9999","권역응급의료센터"],
+["전북권","원광대학교병원","전북 익산시 무왕로 895","063-859-1114","권역응급의료센터"],
+["전북권","전북대학교병원","전북 전주시 덕진구 건지로 20","063-250-1114","권역응급의료센터"],
+["전남권","전남대학교병원","광주 동구 제봉로 42","1899-0000","권역응급의료센터"],
+["전남권","조선대학교병원","광주 동구 필문대로 365","1811-7474","권역응급의료센터"],
+["전남권","화순전남대학교병원","전남 화순군 화순읍 서양로 322","061-379-7120","지역응급의료센터"],
+["경북권","경북대학교병원","대구 중구 동덕로 130","053-200-5114","권역응급의료센터"],
+["경북권","계명대학교동산병원","대구 달서구 달구벌대로 1035","1577-6622","권역응급의료센터"],
+["경북권","대구가톨릭대학교병원","대구 남구 두류공원로17길 33","053-650-3000","지역응급의료센터"],
+["경북권","영남대학교병원","대구 남구 현충로 170","053-623-8001","지역응급의료센터"],
+["경북권","칠곡경북대학교병원","대구 북구 호국로 807","053-200-2000","지역응급의료센터"],
+["경남동부권","고신대학교복음병원","부산 서구 감천로 262","051-990-6114","지역응급의료센터"],
+["경남동부권","동아대학교병원","부산 서구 대신공원로 26","051-240-2400","권역응급의료센터"],
+["경남동부권","부산대학교병원","부산 서구 구덕로 179","051-240-7000","지역응급의료센터"],
+["경남동부권","양산부산대학교병원","경남 양산시 물금읍 금오로 20","055-360-1000","권역응급의료센터"],
+["경남동부권","인제대학교부산백병원","부산 부산진구 복지로 75","051-890-6114","권역응급의료센터"],
+["경남동부권","울산대학교병원","울산 동구 대학병원로 25","052-250-7000","권역응급의료센터"],
+["경남서부권","경상국립대학교병원","경남 진주시 강남로 79","055-750-8000","권역응급의료센터"],
+["경남서부권","삼성창원병원","경남 창원시 마산회원구 팔용로 158","055-233-8899","권역응급의료센터"]
+];
+
+// [소속, 병원명, 주소, 대표전화, 비고]  ※ 전화 공란 = 공개 데이터에서 미조회
+const 군병원 = [
+["국군의무사령부","국군수도병원","경기 성남시 분당구 새마을로177번길 81","031-725-6075","종합병원·지역응급의료기관·국군외상센터"],
+["국군의무사령부","국군고양병원","경기 고양시 덕양구 혜음로 215","031-963-6657","주말·공휴일 응급실 031-962-1188"],
+["국군의무사령부","국군양주병원","경기 양주시 은현면 화합로 1133","031-857-0963","수술집중병원"],
+["국군의무사령부","국군포천병원","경기 포천시 화현면 화동로 564","031-530-1203",""],
+["국군의무사령부","국군구리병원","경기 구리시 인창2로 177","031-554-0940","정신건강특성화병원"],
+["국군의무사령부","국군강릉병원","강원 강릉시 주문진읍 동해대로 4371-34","1688-9165",""],
+["국군의무사령부","국군춘천병원","","","공개 데이터 미조회 — 명부 확인"],
+["국군의무사령부","국군홍천병원","","","공개 데이터 미조회 — 명부 확인"],
+["국군의무사령부","국군대전병원","","","수술집중병원 · 공개 데이터 미조회 — 명부 확인"],
+["국군의무사령부","국군서울지구병원","","","공개 데이터 미조회 — 명부 확인"],
+["국군의무사령부","국군대구병원","경북 경산시 하양읍 대경로 425-41","053-750-5107","응급실 053-750-5119"],
+["국군의무사령부","국군함평병원","전남 함평군 해보면 신해로 1027","061-390-5114",""],
+["해군","해군해양의료원","경남 창원시 진해구 진해대로963번길 35","055-907-6996","응급실 24시간"],
+["해군","해군포항병원","경북 포항시 남구 오천읍 충무로 70","054-290-2423","군인·가족 진료, 응급실 054-290-2402"],
+["공군","공군항공우주의료원","","","공개 데이터 미조회 — 명부 확인"]
+];
+
+// 명부에서 직접 옮겨 적을 항목 (공개 데이터에 없음)
+const 입력항목 = ["병원장","팩스","장비보유(CT·MRI·PET 등)","비급여 공개","환자경험평가 2026 대상","평가 담당자 이메일"];
+
+</script>
+<script>
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const KEY="hdir2026";let store={};try{store=JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(store))}catch(e){}};
+const fmt=n=>n.toLocaleString("ko-KR");
+
+// ---- 명부 목차 구조 (id, 번호, 제목, 렌더러) ----
+const PEND=(t,hint)=>()=>pending(t,hint);
+const TOC=[
+ {g:"머리말",items:[
+  ["eth","","병원윤리강령",PEND("병원윤리강령")],
+  ["org","","대한병원협회 사무국 조직도 및 연락처",PEND("사무국 조직도 및 연락처")],
+  ["exe","","대한병원협회 임원(제43대)",PEND("임원(제43대)")],
+  ["assoc","","시·도 및 직능 병원회, 직능 단체 현황",PEND("시·도 및 직능 병원회")]]},
+ {g:"본문",items:[
+  ["s1","1","2026년도 전국 병원 현황",viewSummary],
+  ["s2a","2-가","지역별 병원 현황",PEND("지역별 병원 현황","종합병원 385곳 명단이 여기에 있으면 요청하신 '종합병원' 항목을 채울 수 있습니다.")],
+  ["s2b","2-나","군병원 현황",()=>viewTable("mil",["소속","병원명","주소","대표전화","비고"],군병원,"군병원은 전국현황 집계(3,425개)에서 제외됩니다. 빈 칸은 공개 데이터에 없어 명부 확인이 필요합니다.")],
+  ["s3","3","지역별 시·구·군별 현황 집계",PEND("시·구·군별 현황 집계")],
+  ["s4","4","설립구분별 현황 집계",PEND("설립구분별 현황 집계")],
+  ["s5","5","설립구분별 및 병상규모별 현황 집계",PEND("설립구분별·병상규모별 집계")],
+  ["s6","6","진료과목별 현황 집계",PEND("진료과목별 현황 집계")]]},
+ {g:"7. 기타현황",items:[
+  ["s7a","7-가","응급의료병원 현황",viewEmerg],
+  ["s7b","7-나","호스피스 전문기관 현황",PEND("호스피스 전문기관 현황")],
+  ["s7c","7-다","보훈위탁병원 현황",PEND("보훈위탁병원 현황")],
+  ["s7d","7-라","간호간병통합서비스 운영 기관 현황",PEND("간호간병통합서비스 운영 기관")],
+  ["s7e","7-마","전문병원지정 현황",PEND("전문병원지정 현황","전문병원은 2026 환자경험평가 신규 대상입니다.")],
+  ["s7f","7-바","상급종합병원 현황",()=>viewTable("tert",["권역","병원명","주소","대표전화","응급의료기관"],상급종합,"제5기 상급종합병원(보건복지부 지정, 2024.1.1~2026.12.31) 47개소. 대표전화·주소는 응급의료포털 공개 데이터(2026-11-23 조회).")],
+  ["s7g","7-사","미래의료산업협의회 회원사 현황",PEND("미래의료산업협의회 회원사")]]},
+ {g:"요청하신 내용",items:[
+  ["req","★","요청 항목 점검표",viewReq],
+  ["px","★","환자경험평가 2026",viewPx]]}
+];
+const ALL=TOC.flatMap(g=>g.items);
+let cur="req",q="";
+function tabs(){
+  document.getElementById("tabs").innerHTML=TOC.map(g=>`<div class="grp"><div class="gt">${esc(g.g)}</div>${g.items.map(([id,n,t])=>{
+    const done=!["eth","org","exe","assoc","s2a","s3","s4","s5","s6","s7b","s7c","s7d","s7e","s7g"].includes(id);
+    return `<button class="${id===cur?"on":""}" data-t="${id}"><span class="no">${esc(n)}</span>${esc(t)}<span class="st ${done?"y":"n"}">${done?"●":"○"}</span></button>`}).join("")}</div>`).join("");
+}
+document.getElementById("tabs").onclick=e=>{const b=e.target.closest("button");if(!b)return;cur=b.dataset.t;q="";render();window.scrollTo(0,0)};
+function render(){tabs();const it=ALL.find(x=>x[0]===cur);document.getElementById("ttl").textContent=(it[1]&&it[1]!=="★"?it[1]+". ":"")+it[2];it[3]()}
+
+function pending(t,hint){
+  document.getElementById("view").innerHTML=`<div class="note">「${esc(t)}」 쪽은 아직 사진을 받지 못해 비어 있습니다. 해당 쪽을 촬영해 보내주시면 표로 옮기고 합계를 검산합니다.${hint?`<br><b>${esc(hint)}</b>`:""}</div>`;
+}
+
+function viewEmerg(){
+  const by={};상급종합.forEach(r=>{(by[r[4]]??=[]).push(r[1])});
+  document.getElementById("view").innerHTML=`<div class="note">명부 전체 응급의료병원 목록은 사진 필요. 아래는 상급종합병원 47곳의 응급의료기관 구분(응급의료포털 공개 데이터)입니다.</div>
+  <div class="wrap"><table><thead><tr><th>구분</th><th>수</th><th>병원</th></tr></thead><tbody>
+  ${Object.entries(by).map(([k,v])=>`<tr><td>${esc(k)}</td><td class="num">${v.length}</td><td style="white-space:normal">${v.map(esc).join(", ")}</td></tr>`).join("")}</tbody></table></div>`;
+}
+
+// ---- 요청 항목 점검 ----
+function filled(id,rows,f){return rows.filter(r=>(store[id+":"+r[1]]||{})[f]).length}
+function viewReq(){
+  const T=상급종합,M=군병원;
+  const cell=(st,txt)=>`<td class="${st}">${{y:"✔",p:"✎",n:"✘"}[st]} ${txt}</td>`;
+  const inp=(id,rows,f)=>{const n=filled(id,rows,f);return cell(n===rows.length?"y":"p",`입력 ${n}/${rows.length}`)};
+  const milPhone=M.filter(r=>r[3]).length;
+  const rows=[
+   ["병원 대표전화",cell("y","47/47 확보"),cell("n","명단 없음 (2-가 사진 필요)"),cell(milPhone===M.length?"y":"p",`${milPhone}/${M.length} 확보`)],
+   ["병원장",inp("tert",T,"병원장"),cell("n","명단 없음"),inp("mil",M,"병원장")],
+   ["팩스",inp("tert",T,"팩스"),cell("n","명단 없음"),inp("mil",M,"팩스")],
+   ["장비보유(CT·MRI·PET 등)",inp("tert",T,"장비보유(CT·MRI·PET 등)"),cell("n","명단 없음"),inp("mil",M,"장비보유(CT·MRI·PET 등)")],
+   ["비급여 공개",inp("tert",T,"비급여 공개"),cell("n","명단 없음"),inp("mil",M,"비급여 공개")],
+   ["환자경험평가 2026 대상",inp("tert",T,"환자경험평가 2026 대상"),cell("n","명단 없음"),inp("mil",M,"환자경험평가 2026 대상")],
+   ["평가 담당자 이메일",inp("tert",T,"평가 담당자 이메일"),cell("n","명단 없음"),inp("mil",M,"평가 담당자 이메일")],
+  ];
+  document.getElementById("view").innerHTML=`
+  <div class="note">처음 요청하신 항목(장비보유 · 상급종합병원 · 종합병원 · 군병원 · 비급여 · 병원장/전화 · 팩스 · 2026 환자경험평가 대상 · 담당자 이메일)을 병원 종류별로 얼마나 채웠는지 보여줍니다. 표에 입력하면 숫자가 바로 바뀝니다.</div>
+  <div class="wrap"><table class="req"><thead><tr><th>요청 항목</th><th>상급종합병원 (47)</th><th>종합병원 (385)</th><th>군병원 (${M.length})</th></tr></thead><tbody>
+  ${rows.map(r=>`<tr><th>${r[0]}</th>${r.slice(1).join("")}</tr>`).join("")}</tbody></table></div>
+  <p class="legend">✔ 확보 · ✎ 명부 보고 입력 중 · ✘ 자료 없음</p>
+  <h3>채우는 방법</h3><ul class="how">
+  <li><b>대표전화</b>: 공개 데이터로 확보 완료(상급종합 47곳, 군병원 10곳).</li>
+  <li><b>병원장·팩스</b>: 명부 본문에 있음 → <a href="#" data-go="s7f">7-바 상급종합병원</a>, <a href="#" data-go="s2b">2-나 군병원</a> 표의 주황 칸에 입력, 또는 해당 쪽 사진 전송.</li>
+  <li><b>종합병원 385곳</b>: <a href="#" data-go="s2a">2-가 지역별 병원 현황</a> 쪽 사진이 필요합니다.</li>
+  <li><b>장비보유·비급여</b>: 심평원 공공데이터(의료기관별 상세정보·비급여 진료비) API 인증키가 있으면 자동으로 채울 수 있습니다.</li>
+  <li><b>2026 환자경험평가 대상·담당자 이메일</b>: 887곳 명단과 담당자 이메일은 공개 자료에 없습니다. 심평원 공지 또는 병원에서 받은 자료로 입력하세요.</li></ul>`;
+  document.querySelectorAll("[data-go]").forEach(a=>a.onclick=e=>{e.preventDefault();cur=a.dataset.go;render()});
+}
+
+function viewSummary(){
+  const sumI=전국현황.행.reduce((a,r)=>a+r[1],0),sumB=전국현황.행.reduce((a,r)=>a+r[2],0);
+  const okI=sumI===전국현황.계[0],okB=sumB===전국현황.계[1];
+  document.getElementById("view").innerHTML=`
+  <div class="note">출처: ${esc(전국현황.출처)} · ${esc(전국현황.기준)}</div>
+  <div class="wrap"><table><thead><tr><th>구분</th><th>기관수</th><th>병상수</th><th>기관당 평균 병상</th></tr></thead><tbody>
+  ${전국현황.행.map(r=>`<tr><td>${r[0]}</td><td class="num">${fmt(r[1])}</td><td class="num">${fmt(r[2])}</td><td class="num">${fmt(Math.round(r[2]/r[1]))}</td></tr>`).join("")}
+  <tr class="total"><td>계</td><td class="num">${fmt(전국현황.계[0])}</td><td class="num">${fmt(전국현황.계[1])}</td><td class="num">${fmt(Math.round(전국현황.계[1]/전국현황.계[0]))}</td></tr>
+  </tbody></table></div>
+  <p>검산: 기관수 합 ${fmt(sumI)} <span class="${okI?"ok":""}">${okI?"✔ 일치":"✘ 불일치"}</span> · 병상수 합 ${fmt(sumB)} <span class="${okB?"ok":""}">${okB?"✔ 일치":"✘ 불일치"}</span></p>
+`;
+}
+
+function viewTable(id,cols,rows,note){
+  const all=[...cols,...입력항목];
+  document.getElementById("view").innerHTML=`<div class="note">${esc(note)}</div>
+  <div class="bar"><input id="q" type="search" placeholder="병원명·지역·전화 검색" value="${esc(q)}"><span id="cnt" class="badge"></span><button id="csv">CSV 내려받기</button></div>
+  <div class="wrap"><table><thead><tr><th>#</th>${all.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead><tbody id="tb"></tbody></table></div>`;
+  const tb=document.getElementById("tb"),inp=document.getElementById("q");
+  const draw=()=>{const k=q.trim().toLowerCase();let n=0;
+    tb.innerHTML=rows.map((r,i)=>{const key=id+":"+r[1];const ex=store[key]||{};
+      const hay=(r.join(" ")+" "+Object.values(ex).join(" ")).toLowerCase();if(k&&!hay.includes(k))return"";n++;
+      return `<tr><td>${i+1}</td>${r.map(v=>`<td>${esc(v)||'<span style="opacity:.5">—</span>'}</td>`).join("")}${입력항목.map(f=>`<td contenteditable data-k="${esc(key)}" data-f="${esc(f)}">${esc(ex[f]||"")}</td>`).join("")}</tr>`}).join("");
+    document.getElementById("cnt").textContent=`${n} / ${rows.length}`};
+  inp.oninput=()=>{q=inp.value;draw()};
+  tb.oninput=e=>{const c=e.target.closest("td[contenteditable]");if(!c)return;(store[c.dataset.k]??={})[c.dataset.f]=c.textContent.trim();save()};
+  document.getElementById("csv").onclick=()=>{
+    const lines=[all.join(",")].concat(rows.map(r=>{const ex=store[id+":"+r[1]]||{};return [...r,...입력항목.map(f=>ex[f]||"")].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(",")}));
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+lines.join("\n")],{type:"text/csv"}));a.download=id+"_2026병원명부.csv";a.click()};
+  draw();
+}
+
+function viewPx(){
+  document.getElementById("view").innerHTML=`
+  <div class="note">공개 자료로 확인된 내용만 적었습니다. 대상기관 887곳의 개별 명단과 병원별 담당자 이메일은 공개된 자료에 없습니다.</div>
+  <div class="wrap"><table><tbody>
+  <tr><th>회차</th><td>6차 환자경험평가 (2026년)</td></tr>
+  <tr><th>대상기관</th><td>상급종합병원 · 종합병원 + <b>전문병원, 100병상 이상 병원</b> 신규 포함 → <b>총 887개소</b> (5차 376개소)</td></tr>
+  <tr><th>조사</th><td>2026년 9~11월, 카카오톡·문자 모바일 웹 설문 (설문 문항·대상 환자는 5차와 동일)</td></tr>
+  <tr><th>결과 공개</th><td>2027년 7월 예정 — 상급종합·종합병원은 기관별 등급, 병원급은 7개 영역별 점수 (신규 병원급은 1~5등급 미적용)</td></tr>
+  <tr><th>발표</th><td>건강보험심사평가원 보도자료 2026-07-31 (5차 결과 + 6차 세부시행계획)</td></tr>
+  </tbody></table></div>
+  <p style="font-size:14px;color:var(--sub)">상급종합·군병원 표의 <b>'환자경험평가 2026 대상'</b>, <b>'평가 담당자 이메일'</b> 칸에 대상 여부와 이메일을 직접 적어 두면 검색과 CSV에 함께 나옵니다. 대상 명단은 심평원 요양기관업무포털 공지 또는 병원평가통합포털에서 확인할 수 있습니다.</p>`;
+}
+render();
+
+</script>
+</body>
+</html>
